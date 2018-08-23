@@ -114,7 +114,8 @@ class OpencvObjectTracker(object):
             iter(bounding_boxes)
         except TypeError:
             raise Exception(
-                "Parameter bounding_boxes must be an iterable of BoundingBox instances.")
+                "Parameter bounding_boxes must be an iterable of BoundingBox instances."
+            )
 
         boxes_and_objects = map(lambda box: (
             box, self.get(box)), bounding_boxes)
