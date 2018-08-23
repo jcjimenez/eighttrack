@@ -107,5 +107,92 @@ class OpencvTrackedObjectTest(unittest.TestCase):
         )
 
 
+class OpencvObjectTrackerTest(unittest.TestCase):
+    def setUp(self):
+        self.generator = VideoCaptureGenerator(os.path.join(
+            os.path.dirname(__file__),
+            'data',
+            'clip.m4v'
+        ))
+        self.first_bounding_box = BoundingBox(325, 85, 240, 240)
+        self.tracker = OpencvObjectTracker()
+
+    def test_default_state(self):
+        self.assertEqual(self.tracker.tracked_objects, list())
+
+    def test_add_single(self):
+        objects_added = self.tracker.add(
+            [self.first_bounding_box],
+            next(self.generator)
+        )
+        self.assertEqual(len(objects_added), 1)
+        self.assertEqual(objects_added, self.tracker.tracked_objects)
+
+        tracked_object = list(objects_added)[0]
+        self.assertIsNotNone(tracked_object.object_id)
+        self.assertEqual(tracked_object.state, TrackedObjectState.TRACKING)
+        self.assertEqual(
+            tracked_object.first_known_location,
+            self.first_bounding_box
+        )
+        self.assertEqual(
+            tracked_object.last_known_location,
+            self.first_bounding_box
+        )
+
+    def test_call_single(self):
+        frame = next(self.generator)
+        frame.detected_objects = set([self.first_bounding_box])
+        updated_frame = self.tracker(frame)
+        self.assertIsNotNone(updated_frame)
+
+        self.assertEqual(len(self.tracker.tracked_objects), 1)
+        self.assertEqual(
+            updated_frame.tracked_objects,
+            self.tracker.tracked_objects
+        )
+
+        tracked_object = list(self.tracker.tracked_objects)[0]
+        self.assertIsNotNone(tracked_object.object_id)
+        self.assertEqual(tracked_object.state, TrackedObjectState.TRACKING)
+        self.assertEqual(
+            tracked_object.first_known_location,
+            self.first_bounding_box
+        )
+        self.assertEqual(
+            tracked_object.last_known_location,
+            self.first_bounding_box
+        )
+
+    def test_call_two_overlapping_high_iou(self):
+        frame = next(self.generator)
+        frame.detected_objects = [
+            BoundingBox(320, 80, 244, 244),
+            BoundingBox(325, 85, 240, 240),
+        ]
+        updated_frame = self.tracker(frame)
+        self.assertIsNotNone(updated_frame)
+
+        # Since the two detected objects are so close together, they are treated
+        # as a single one.
+        self.assertEqual(len(self.tracker.tracked_objects), 1)
+        self.assertEqual(
+            updated_frame.tracked_objects,
+            self.tracker.tracked_objects
+        )
+
+        tracked_object = list(self.tracker.tracked_objects)[0]
+        self.assertIsNotNone(tracked_object.object_id)
+        self.assertEqual(tracked_object.state, TrackedObjectState.TRACKING)
+        self.assertEqual(
+            tracked_object.first_known_location,
+            BoundingBox(320, 80, 244, 244)
+        )
+        self.assertEqual(
+            tracked_object.first_known_location,
+            tracked_object.last_known_location
+        )
+
+
 if __name__ == '__main__':
     unittest.main()

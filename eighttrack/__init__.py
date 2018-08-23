@@ -36,9 +36,9 @@ class BoundingBox(object):
         self.height = height
 
         self.x1 = x
-        self.x2 = x+width
+        self.x2 = x + width
         self.y1 = y
-        self.y2 = y+height
+        self.y2 = y + height
 
         self.pt1 = (self.x1, self.y1)
         self.pt2 = (self.x2, self.y2)
@@ -79,7 +79,11 @@ class BoundingBox(object):
         return (self.x, self.y, self.width, self.height)
 
     def as_left_bottom_right_top(self):
-        return (self.x1, self.y2, self.x2, self.y1)
+        '''
+        Returns a tuple in Quadrant I coordinate space in the form:
+        (left, top, bottom, right).
+        '''
+        return (self.x, self.y, self.x + self.width, self.y + self.height)
 
     def iou(self, other):
         '''

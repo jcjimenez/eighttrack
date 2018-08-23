@@ -23,7 +23,7 @@ class BoundingBoxTest(unittest.TestCase):
 
         self.assertEqual(box.as_point_pair(), (10, 20, 310, 420))
         self.assertEqual(box.as_origin_and_size(), (10, 20, 300, 400))
-        self.assertEqual(box.as_left_bottom_right_top(), (10, 420, 310, 20))
+        self.assertEqual(box.as_left_bottom_right_top(), (10, 20, 310, 420))
         self.assertEqual(box.center(), (160.0, 220.0))
 
     def test_equals(self):

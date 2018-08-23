@@ -6,7 +6,7 @@ import random
 import rtree
 import uuid
 
-from . import TrackedObject, BoundingBox
+from . import TrackedObject, BoundingBox, VideoFrame, TrackedObjectState
 
 DEFAULT_TRACKER_IOU_THRESHOLD = float(os.environ.get(
     'EIGHTTRACK_CV2_TRACKER_IOU_THRESHOLD',
@@ -73,15 +73,22 @@ class OpencvObjectTracker(object):
     '''
 
     def __init__(self, recovery_threshold_in_seconds=DEFAULT_TRACKER_RECOVERY_THRESHOLD_IN_SECONDS):
-        self.tracked_objects = []
+        '''
+        Initializes ther receiver with an empty list of tracked objects.
+        '''
+        self.tracked_objects = list()
         self.index = rtree.index.Index()
         self.box_iou_threshold = DEFAULT_TRACKER_IOU_THRESHOLD
         self.recovery_threshold_in_seconds = recovery_threshold_in_seconds
 
     def __call__(self, frame):
-        self.add(frame.detected_objects)
+        self.add(frame.detected_objects, frame)
         self.update(frame)
-        return frame
+        return VideoFrame(
+            frame.pixels,
+            detected_objects=frame.detected_objects,
+            tracked_objects=self.tracked_objects
+        )
 
     def get(self, bounding_box):
         '''
@@ -117,8 +124,10 @@ class OpencvObjectTracker(object):
                 "Parameter bounding_boxes must be an iterable of BoundingBox instances."
             )
 
-        boxes_and_objects = map(lambda box: (
-            box, self.get(box)), bounding_boxes)
+        boxes_and_objects = map(
+            lambda box: (box, self.get(box)),
+            bounding_boxes
+        )
 
         result = list()
         for (box, tracked_object) in boxes_and_objects:
@@ -159,10 +168,6 @@ class OpencvObjectTracker(object):
         self.index = self._create_index()
 
     def _append_box(self, box, frame):
-        if self.is_tracking(box):
-            # No need to add since the bounding box is already known.
-            return None
-
         tracked_obj = OpencvTrackedObject(
             str(uuid.uuid4()),
             box,
