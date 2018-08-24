@@ -354,9 +354,11 @@ class TrackedObjectDebugger(object):
 
     def __call__(self, frame):
         for tracked in frame.tracked_objects:
-            color = (0, 255, 0) if tracked.state == TrackedObjectState.TRACKING else (
-                0, 0, 255
-            )
+            color = {
+                TrackedObjectState.TRACKING: (0, 255, 0),
+                TrackedObjectState.MISSING: (0, 255, 255),
+                TrackedObjectState.LOST: (0, 0, 255)
+            }.get(tracked.state, (0, 0, 255))
             box = tracked.last_known_location
             cv2.putText(
                 frame.pixels,
