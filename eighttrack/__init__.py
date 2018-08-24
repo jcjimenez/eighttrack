@@ -341,6 +341,37 @@ class DetectedObjectDebugger(object):
                 frame.pixels,
                 box.pt1,
                 box.pt2,
-                (0, 255, 0)
+                (255, 0, 0),
+                2
+            )
+        return frame
+
+
+class TrackedObjectDebugger(object):
+    '''
+    Draws the detected object bounding boxes on each video frame.
+    '''
+
+    def __call__(self, frame):
+        for tracked in frame.tracked_objects:
+            color = (0, 255, 0) if tracked.state == TrackedObjectState.TRACKING else (
+                0, 0, 255
+            )
+            box = tracked.last_known_location
+            cv2.putText(
+                frame.pixels,
+                str(tracked.object_id),
+                (box.pt1[0], box.pt1[1]-3),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.4,
+                color,
+                1
+            )
+            cv2.rectangle(
+                frame.pixels,
+                box.pt1,
+                box.pt2,
+                color,
+                1
             )
         return frame

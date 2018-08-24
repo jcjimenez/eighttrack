@@ -62,7 +62,7 @@ class OpencvTrackedObject(TrackedObject):
             return (False, self.last_known_location)
 
         self.set_last_known_location(bounding_box)
-        self._initialize_tracker(frame)
+        self._initialize_tracker(frame.pixels)
         return (True, self.last_known_location)
 
 
