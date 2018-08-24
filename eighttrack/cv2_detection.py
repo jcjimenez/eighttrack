@@ -9,9 +9,9 @@ CASCADE_FACE_DETECTOR_DEFAULT_XML_PATH = os.environ.get(
 )
 
 
-class CascadeFaceDetector(object):
+class CascadeDetector(object):
     '''
-    A CascadeFaceDetector is a simple wrapper around OpenCV's CascadeClassifier
+    A CascadeDetector is a simple wrapper around OpenCV's CascadeClassifier
     initialized with one of the included a face detection XML files.
     '''
 
@@ -23,7 +23,7 @@ class CascadeFaceDetector(object):
         self.classifier = cv2.CascadeClassifier(haar_path)
 
     def detect(self, frame):
-        faces = self.classifier.detectMultiScale(
+        objects = self.classifier.detectMultiScale(
             frame,
             scaleFactor=self.scale_factor,
             minNeighbors=self.min_neighbors,
@@ -41,7 +41,7 @@ class CascadeFaceDetector(object):
                     rect[3]
                 )
             ),
-            faces
+            objects
         )
 
     def __call__(self, frame):

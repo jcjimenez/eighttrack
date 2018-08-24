@@ -4,12 +4,12 @@ eighttrack is simple package to bootstrap an object detection and tracking pipel
 # example
 ```
 from eighttrack import *
-from eighttrack.cv2_detection import CascadeFaceDetector
+from eighttrack.cv2_detection import CascadeDetector
 from eighttrack.cv2_tracking import OpencvObjectTracker
 
 p = Pipeline()
 p.add(VideoCaptureGenerator('test/data/clip.m4v'))
-p.add(CascadeFaceDetector())
+p.add(CascadeDetector())
 p.add(DetectedObjectDebugger())
 p.add(OpencvObjectTracker())
 p.add(TrackedObjectDebugger())
