@@ -147,6 +147,14 @@ class DetectedObject(object):
     def __hash__(self):
         return hash(self.object_id)
 
+    def __str__(self):
+        return "DetectedObject({}, {}, {}, {})".format(
+            self.label,
+            self.score,
+            self.bounding_box,
+            self.object_id
+        )
+
 
 class TrackedObjectState(object):
     '''

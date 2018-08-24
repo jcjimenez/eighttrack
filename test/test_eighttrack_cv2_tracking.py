@@ -122,7 +122,7 @@ class OpencvObjectTrackerTest(unittest.TestCase):
 
     def test_add_single(self):
         objects_added = self.tracker.add(
-            [self.first_bounding_box],
+            [DetectedObject('face', 0.99, self.first_bounding_box)],
             next(self.generator)
         )
         self.assertEqual(len(objects_added), 1)
@@ -142,7 +142,8 @@ class OpencvObjectTrackerTest(unittest.TestCase):
 
     def test_call_single(self):
         frame = next(self.generator)
-        frame.detected_objects = set([self.first_bounding_box])
+        frame.detected_objects = set(
+            [DetectedObject('face', 0.99, self.first_bounding_box)])
         updated_frame = self.tracker(frame)
         self.assertIsNotNone(updated_frame)
 
@@ -167,8 +168,16 @@ class OpencvObjectTrackerTest(unittest.TestCase):
     def test_call_two_overlapping_high_iou(self):
         frame = next(self.generator)
         frame.detected_objects = [
-            BoundingBox(320, 80, 244, 244),
-            BoundingBox(325, 85, 240, 240),
+            DetectedObject(
+                label='face',
+                score=0.99,
+                bounding_box=BoundingBox(320, 80, 244, 244)
+            ),
+            DetectedObject(
+                label='face',
+                score=0.99,
+                bounding_box=BoundingBox(325, 85, 240, 240)
+            )
         ]
         updated_frame = self.tracker(frame)
         self.assertIsNotNone(updated_frame)
@@ -191,6 +200,63 @@ class OpencvObjectTrackerTest(unittest.TestCase):
         self.assertEqual(
             tracked_object.first_known_location,
             tracked_object.last_known_location
+        )
+
+    def test_two_objects_crossing_paths(self):
+        animation = VideoCaptureGenerator(os.path.join(
+            os.path.dirname(__file__),
+            'data',
+            'simple_animation.mp4'
+        ))
+        frame = next(animation)
+        frame.detected_objects = [
+            DetectedObject(
+                'rectangle',
+                0.99,
+                BoundingBox(178, 100, 230, 210)
+            ),
+            DetectedObject(
+                'oval',
+                0.99,
+                BoundingBox(1190, 100, 224, 200)
+            ),
+        ]
+        updated_frame = self.tracker(frame)
+        self.assertIsNotNone(updated_frame)
+
+        self.assertEqual(len(self.tracker.tracked_objects), 2)
+        self.assertEqual(
+            updated_frame.tracked_objects,
+            self.tracker.tracked_objects
+        )
+
+        for frame in animation:
+            self.tracker(frame)
+
+        self.assertEqual(len(self.tracker.tracked_objects), 2)
+        self.assertEqual(
+            updated_frame.tracked_objects,
+            self.tracker.tracked_objects
+        )
+        center_x = (1928/2)
+        left_objects = list(filter(
+            lambda to: to.last_known_location.x < center_x,
+            self.tracker.tracked_objects
+        ))
+        self.assertTrue(len(left_objects), 1)
+        self.assertEqual(
+            left_objects[0].last_known_location.as_origin_and_size(),
+            (654, 364, 230, 210)
+        )
+
+        right_objects = list(filter(
+            lambda to: to.last_known_location.x > center_x,
+            self.tracker.tracked_objects
+        ))
+        self.assertTrue(len(right_objects), 1)
+        self.assertEqual(
+            right_objects[0].last_known_location.as_origin_and_size(),
+            (1190, 100, 224, 200)
         )
 
 
