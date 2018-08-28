@@ -9,4 +9,8 @@ RUN curl -L http://download.osgeo.org/libspatialindex/spatialindex-src-1.8.5.tar
 
 WORKDIR /eighttrack
 ADD . /eighttrack
-RUN python3 setup.py test
+RUN python3 setup.py test && \
+    python3 setup.py install && \
+    cd / && \
+    python3 -c 'import eighttrack' && \
+    cd /eighttrack

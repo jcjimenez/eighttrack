@@ -1,5 +1,6 @@
 tracker.dat
 tracker.idx
+main.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

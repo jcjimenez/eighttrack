@@ -5,8 +5,16 @@ from . import DetectedObject, BoundingBox
 
 CASCADE_FACE_DETECTOR_DEFAULT_XML_PATH = os.environ.get(
     'EIGHTTRACK_CASCADE_FACE_DETECTOR_DEFAULT_XML_PATH',
-    '/usr/local/Cellar/opencv/3.4.1_6/share/OpenCV/haarcascades/haarcascade_frontalface_default.xml'
+    '/usr/share/OpenCV/haarcascades/haarcascade_frontalface_default.xml'
 )
+'''
+CASCADE_FACE_DETECTOR_DEFAULT_XML_PATH can be set to the following are known
+paths for useful cascades:
+
+  opencv-docker image: /usr/share/OpenCV/haarcascades/haarcascade_frontalface_default.xml
+  homebrew: /usr/local/Cellar/opencv/3.4.1_6/share/OpenCV/haarcascades/haarcascade_frontalface_default.xml
+  
+'''
 
 
 class CascadeDetector(object):
