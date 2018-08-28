@@ -24,6 +24,8 @@ class CascadeDetector(object):
     '''
 
     def __init__(self, scale_factor=1.5, min_neighbors=8, min_size=(16, 16), flags=cv2.CASCADE_SCALE_IMAGE, haar_path=CASCADE_FACE_DETECTOR_DEFAULT_XML_PATH):
+        if not os.path.isfile(haar_path):
+            raise ValueError("{} is not a valid HAAR xml file.".format(haar_path))
         self.scale_factor = scale_factor
         self.min_neighbors = min_neighbors
         self.min_size = min_size
