@@ -6,6 +6,7 @@ import datetime
 import math
 import os
 import uuid
+import time
 
 
 class VideoFrame(object):
@@ -17,6 +18,7 @@ class VideoFrame(object):
         self.pixels = pixels
         self.detected_objects = detected_objects
         self.tracked_objects = tracked_objects
+        self.capture_timestamp = time.time()
 
 
 class BoundingBox(object):
@@ -326,6 +328,37 @@ class VideoDisplaySink(object):
     def __call__(self, frame):
         cv2.imshow(self.name, frame.pixels)
         cv2.waitKey(1)
+        return frame
+
+
+class FPSDebugger(object):
+    '''
+    Infers the FPS by subtracting the time the FPSDebugger is called in the
+    pipeline from the capture time of the incoming VideoFrame.
+    '''
+
+    def __init__(self, color=(0, 255, 0), position=(0, 14), font=cv2.FONT_HERSHEY_SIMPLEX, scale=0.5, thickness=1):
+        self.color = color
+        self.position = position
+        self.font = font
+        self.scale = scale
+        self.thickness = thickness
+
+    def __call__(self, frame):
+        current_timestamp = time.time()
+        time_difference = current_timestamp - frame.capture_timestamp
+        fps = 0 if time_difference == 0 else 1.0/time_difference
+        text = "fps: {}".format(round(fps, 2))
+        cv2.putText(
+            frame.pixels,
+            text,
+            self.position, s
+            self.font,
+            self.scale,
+            self.color,
+            self.thickness
+        )
+
         return frame
 
 
