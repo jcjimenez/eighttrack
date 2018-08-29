@@ -322,11 +322,14 @@ class VideoDisplaySink(object):
     pipeline.
     '''
 
-    def __init__(self, name='video'):
+    def __init__(self, name='video', scale=1):
         self.name = name
+        self.scale = scale
 
     def __call__(self, frame):
-        cv2.imshow(self.name, frame.pixels)
+        scaled_image = cv2.resize(
+            frame.pixels, (0, 0), fx=self.scale, fy=self.scale)
+        cv2.imshow(self.name, scaled_image)
         cv2.waitKey(1)
         return frame
 
@@ -347,7 +350,7 @@ class FPSDebugger(object):
     def __call__(self, frame):
         current_timestamp = time.time()
         time_difference = current_timestamp - frame.capture_timestamp
-        fps = 0 if time_difference == 0 else 1.0/time_difference
+        fps = 0 if time_difference == 0 else (1.0 / time_difference)
         text = "fps: {}".format(round(fps, 2))
         cv2.putText(
             frame.pixels,
