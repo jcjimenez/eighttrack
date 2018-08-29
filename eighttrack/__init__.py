@@ -352,7 +352,7 @@ class FPSDebugger(object):
         cv2.putText(
             frame.pixels,
             text,
-            self.position, s
+            self.position,
             self.font,
             self.scale,
             self.color,
