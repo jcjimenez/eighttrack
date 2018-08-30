@@ -7,6 +7,10 @@ import math
 import os
 import uuid
 import time
+import sys
+
+if(sys.version_info[:3] < (3, 0)):
+    import itertools
 
 
 class VideoFrame(object):
@@ -271,7 +275,10 @@ class Pipeline(object):
         # assert len(self._steps) > 0
         last = self._generator
         for current in self._steps:
-            transformed = map(current, last)
+            if(sys.version_info[:3] < (3, 0)):
+                transformed = itertools.imap(current, last)
+            else:
+                transformed = map(current, last)
             last = transformed
         return last
 
@@ -316,6 +323,7 @@ class VideoCaptureGenerator(object):
         return VideoFrame(frame)
 
     next = __next__  # for Python 2
+
 
 class VideoDisplaySink(object):
     '''
