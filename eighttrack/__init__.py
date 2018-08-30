@@ -315,6 +315,7 @@ class VideoCaptureGenerator(object):
 
         return VideoFrame(frame)
 
+    next = __next__  # for Python 2
 
 class VideoDisplaySink(object):
     '''
