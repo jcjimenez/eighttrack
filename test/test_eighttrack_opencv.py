@@ -7,7 +7,7 @@ if __name__ == '__main__':
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from eighttrack import *
-from eighttrack.cv2_tracking import *
+from eighttrack.opencv import *
 
 
 class OpencvTrackedObjectTest(unittest.TestCase):

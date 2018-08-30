@@ -6,17 +6,83 @@ import random
 import rtree
 import uuid
 
-from . import TrackedObject, BoundingBox, VideoFrame, TrackedObjectState
+from .. import BoundingBox, DetectedObject, TrackedObject, VideoFrame, TrackedObjectState
+
+CASCADE_FACE_DETECTOR_DEFAULT_XML_PATH = os.environ.get(
+    'EIGHTTRACK_CASCADE_FACE_DETECTOR_DEFAULT_XML_PATH',
+    '/usr/share/OpenCV/haarcascades/haarcascade_frontalface_default.xml'
+)
+'''
+CASCADE_FACE_DETECTOR_DEFAULT_XML_PATH can be set to the following are known
+paths for useful cascades:
+
+  opencv-docker image: /usr/share/OpenCV/haarcascades/haarcascade_frontalface_default.xml
+  homebrew: /usr/local/Cellar/opencv/3.4.1_6/share/OpenCV/haarcascades/haarcascade_frontalface_default.xml
+  
+'''
 
 DEFAULT_TRACKER_IOU_THRESHOLD = float(os.environ.get(
     'EIGHTTRACK_CV2_TRACKER_IOU_THRESHOLD',
     '0.33'
 ))
+'''
+DEFAULT_TRACKER_IOU_THRESHOLD is the default IOU ratio threshold that is used
+to match incoming detected object bounding boxes to existing known objects
+(that are already being tracked).
+'''
 
 DEFAULT_TRACKER_RECOVERY_THRESHOLD_IN_SECONDS = float(os.environ.get(
     'EIGHTTRACK_CV2_TRACKER_RECOVERY_THRESHOLD_IN_SECONDS',
     '7'
 ))
+'''
+DEFAULT_TRACKER_RECOVERY_THRESHOLD_IN_SECONDS indicates how long a tracked
+object can be missing before the object tracker gives up on it.
+'''
+
+
+class CascadeDetector(object):
+    '''
+    A CascadeDetector is a simple wrapper around OpenCV's CascadeClassifier
+    initialized with one of the included a face detection XML files.
+    '''
+
+    def __init__(self, scale_factor=1.5, min_neighbors=8, min_size=(16, 16), flags=cv2.CASCADE_SCALE_IMAGE, haar_path=CASCADE_FACE_DETECTOR_DEFAULT_XML_PATH):
+        if not os.path.isfile(haar_path):
+            raise ValueError(
+                "{} is not a valid HAAR xml file.".format(haar_path))
+        self.scale_factor = scale_factor
+        self.min_neighbors = min_neighbors
+        self.min_size = min_size
+        self.flags = flags
+        self.classifier = cv2.CascadeClassifier(haar_path)
+
+    def detect(self, frame):
+        objects = self.classifier.detectMultiScale(
+            frame,
+            scaleFactor=self.scale_factor,
+            minNeighbors=self.min_neighbors,
+            minSize=self.min_size,
+            flags=self.flags
+        )
+        return map(
+            lambda rect: DetectedObject(
+                label='face',
+                score=0.99,
+                bounding_box=BoundingBox(
+                    rect[0],
+                    rect[1],
+                    rect[2],
+                    rect[3]
+                )
+            ),
+            objects
+        )
+
+    def __call__(self, frame):
+        objects = self.detect(frame.pixels)
+        frame.detected_objects = frame.detected_objects.union(objects)
+        return frame
 
 
 class OpencvTrackedObject(TrackedObject):

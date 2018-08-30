@@ -7,8 +7,8 @@ the `haar_path` value):
 
 ```
 from eighttrack import *
-from eighttrack.cv2_detection import CascadeDetector
-from eighttrack.cv2_tracking import OpencvObjectTracker
+from eighttrack.opencv import CascadeDetector
+from eighttrack.opencv import OpencvObjectTracker
 
 p = Pipeline()
 p.add(VideoCaptureGenerator('test/data/clip.m4v'))
